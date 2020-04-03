@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import utils
 from dataset import get_train_val_test_loaders
-from model.challenge import Challenge
+from model.challenge import Challenge, Challenge_try
 from train_common import *
 from utils import config
 
@@ -33,7 +33,7 @@ def main(uniqname):
     _, _, te_loader, get_semantic_label = get_train_val_test_loaders(
         num_classes=config('challenge.num_classes'))
 
-    model = Challenge()
+    model = Challenge_try()
 
     # Attempts to restore the latest checkpoint if exists
     model, _, _ = restore_checkpoint(model, config('challenge.checkpoint'))

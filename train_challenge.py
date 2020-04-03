@@ -10,7 +10,7 @@ import torch
 import numpy as np
 import utils
 from dataset import get_train_val_test_loaders
-from model.challenge import Challenge
+from model.challenge import Challenge, Challenge_deeper, Challenge_try
 from train_common import *
 from utils import config
 
@@ -22,11 +22,14 @@ def _train_epoch(data_loader, model, criterion, optimizer):
     # TODO: complete the training step
     for i, (X, y) in enumerate(data_loader):
         # clear parameter gradients
-        ???
+        optimizer.zero_grad()
         #
 
         # forward + backward + optimize
-        ???
+        output = model(X)
+        loss = criterion(output, y)
+        loss.backward()
+        optimizer.step()
         #
     #
 
@@ -69,9 +72,9 @@ def main():
         num_classes=config('challenge.num_classes'))
 
     # TODO: define model, loss function, and optimizer
-    model = ???
-    criterion = ???
-    optimizer = ???
+    model = Challenge_try()
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=1e-4)
     #
 
     # Attempts to restore the latest checkpoint if exists

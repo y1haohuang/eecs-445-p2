@@ -8,6 +8,8 @@ import os
 import numpy as np
 import pandas as pd
 import torch
+from skimage.transform import rotate
+from skimage.util import random_noise
 from matplotlib import pyplot as plt
 from imageio import imread
 from PIL import Image
@@ -16,6 +18,16 @@ from utils import config
 
 def get_train_val_test_loaders(num_classes):
     tr, va, te, _ = get_train_val_test_dataset(num_classes=num_classes)
+
+    batch_size = config('cnn.batch_size')
+    tr_loader = DataLoader(tr, batch_size=batch_size, shuffle=True)
+    va_loader = DataLoader(va, batch_size=batch_size, shuffle=False)
+    te_loader = DataLoader(te, batch_size=batch_size, shuffle=False)
+
+    return tr_loader, va_loader, te_loader, tr.get_semantic_label
+
+def get_train_val_test_loaders_challenge(num_classes):
+    tr, va, te, _ = get_train_val_test_dataset_challenge(num_classes=num_classes)
 
     batch_size = config('cnn.batch_size')
     tr_loader = DataLoader(tr, batch_size=batch_size, shuffle=True)
@@ -42,6 +54,46 @@ def get_train_val_test_dataset(num_classes=5):
     te.X = standardizer.transform(te.X)
 
     # Transpose the dimensions from (N,H,W,C) to (N,C,H,W)
+    tr.X = tr.X.transpose(0,3,1,2)
+    va.X = va.X.transpose(0,3,1,2)
+    te.X = te.X.transpose(0,3,1,2)
+
+    return tr, va, te, standardizer
+
+def get_train_val_test_dataset_challenge(num_classes=5):
+    tr = FoodDataset('train', num_classes)
+    va = FoodDataset('val', num_classes)
+    te = FoodDataset('test', num_classes)
+
+    # Resize
+    tr.X = resize(tr.X)
+    va.X = resize(va.X)
+    te.X = resize(te.X)
+
+    # Standardize
+    standardizer = ImageStandardizer()
+    standardizer.fit(tr.X)
+    tr.X = standardizer.transform(tr.X)
+    va.X = standardizer.transform(va.X)
+    te.X = standardizer.transform(te.X)
+
+    tr_X = []
+    tr_y = []
+    for i in range(0, tr.X.shape[0]):
+        tr_X.append(tr.X[i])
+        tr_X.append(rotate(tr.X[i], angle=45, mode='wrap'))
+        tr_X.append(np.fliplr(tr.X[i]))
+        tr_X.append(np.flipud(tr.X[i]))
+        tr_X.append(random_noise(tr.X[i], var=0.2 ** 2))
+        for j in range(5):
+            tr_y.append(tr.y[i])
+
+
+    # Transpose the dimensions from (N,H,W,C) to (N,C,H,W)
+    tr_X = np.array(tr_X)
+    tr_y = np.array(tr_y)
+    tr.X = tr_X
+    tr.y = tr_y
     tr.X = tr.X.transpose(0,3,1,2)
     va.X = va.X.transpose(0,3,1,2)
     te.X = te.X.transpose(0,3,1,2)

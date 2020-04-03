@@ -28,10 +28,14 @@ def _train_epoch(data_loader, model, criterion, optimizer):
     # TODO: complete the training step
     for i, (X, y) in enumerate(data_loader):
         # clear parameter gradients
-        ???
+        optimizer.zero_grad()
 
         # forward + backward + optimize
-        ???
+        output = model(X)
+        loss = criterion(output, y)
+        loss.backward()
+        optimizer.step()
+
 
 def _evaluate_epoch(axes, tr_loader, val_loader, model, criterion, epoch, stats):
     """
@@ -107,6 +111,19 @@ def main():
         # Evaluate model
         _evaluate_epoch(axes, tr_loader, va_loader, ae_classifier, criterion,
             epoch+1, stats)
+
+        #accuracy
+        if epoch == start_epoch:
+            r = [[], [], [], [], []]
+            for X, y in va_loader:
+                with torch.no_grad():
+                    output = ae_classifier(X)
+                    predict_res = predictions(output.data)
+                    for y_sub, pred_out in zip(y, predict_res):
+                        r[y_sub.item()].append(pred_out == y_sub)
+
+            for i in range(0,5):
+                print("Class ", i, "gives accuracy", np.sum(np.array(r[i]) / len(r[i])))
 
         # Save model parameters
         save_checkpoint(ae_classifier, epoch+1,

@@ -1,7 +1,7 @@
 {
     "csv_file": "data/food.csv",
     "image_path": "data/images/",
-    "image_dim": 32,
+    "image_dim": 64,
     "cnn": {
         "checkpoint": "./checkpoints/cnn/",
         "learning_rate": 1e-4,
@@ -28,7 +28,7 @@
     "challenge": {
         "checkpoint": "./checkpoints/challenge/",
         "learning_rate": 1e-5,
-        "num_epochs": 15,
+        "num_epochs": 50,
         "batch_size": 128,
         "num_classes": 5
     }

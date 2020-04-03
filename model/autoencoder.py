@@ -84,7 +84,10 @@ class AutoencoderClassifier(nn.Module):
         self.repr_dim = repr_dim
 
         # TODO: define each layer
-
+        self.pool = torch.nn.AvgPool2d(2, stride=2)
+        self.fc1 = nn.Linear(768, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 20736)
         #
 
         self.fc_1 = nn.Linear(repr_dim, n_neurons)
@@ -104,7 +107,10 @@ class AutoencoderClassifier(nn.Module):
     def encoder(self, x):
         # TODO: encoder
         N, C, H, W = x.shape
-
+        encoded =self.pool(x)
+        encoded =encoded.view(-1,768)
+        encoded = F.elu(self.fc1(encoded))
+        encoded = F.elu(self.fc2(encoded))
         #
 
         return encoded

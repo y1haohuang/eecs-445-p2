@@ -14,6 +14,7 @@ from dataset import get_train_val_test_loaders
 from model.autoencoder import Autoencoder
 from train_common import *
 from utils import config
+from sklearn import metrics
 
 def get_data_by_label(dataset):
     data = []
@@ -108,6 +109,8 @@ def main():
     dataset = get_data_by_label(va_loader)
 
     model = Autoencoder(config('autoencoder.ae_repr_dim'))
+
+
     criterion = torch.nn.MSELoss()
 
     # Attempts to restore the latest checkpoint if exists
@@ -116,6 +119,8 @@ def main():
         config('autoencoder.checkpoint'))
 
     # Evaluate model
+    evaluate_autoencoder(dataset, get_semantic_label, model, criterion)
+    criterion = metrics.accuracy_score()
     evaluate_autoencoder(dataset, get_semantic_label, model, criterion)
 
     # Report performance
